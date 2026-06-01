@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programming.com — Docs</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #111111;
+    --surface: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e0e0e0;
+    --muted: #666;
+    --accent: #f0a500;
+    --green: #3ecf8e;
+    --red: #e05252;
+    --tag-cloud: #c47a1a;
+    --tag-linux: #2c6e49;
+    --tag-template: #2a6090;
+    --tag-other: #5e3f7a;
+    --font: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── VIEWS ── */
+  #view-list, #view-doc, #view-new { display: none; }
+  body.show-list #view-list { display: block; }
+  body.show-doc  #view-doc  { display: block; }
+  body.show-new  #view-new  { display: block; }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 20px 32px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 18px;
+  }
+  .header-brand svg { color: var(--accent); }
+  .header-brand h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .header-brand span {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-left: 2px;
+  }
+  .header-tabs { display: flex; gap: 0; margin-left: auto; }
+  .tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    user-select: none;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text); }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px 6px 32px;
+    border-radius: 5px;
+    font-family: var(--font);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-wrap input:focus { border-color: #444; }
+  .search-wrap input::placeholder { color: var(--muted); }
+
+  select.filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-family: var(--font);
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 5px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background .15s;
+  }
+  .btn-primary { background: var(--accent); color: #111; margin-left: auto; }
+  .btn-primary:hover { background: #d99500; }
+  .btn-ghost { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: #222; }
+  .btn-danger { background: #3a1a1a; color: var(--red); border: 1px solid #4a2020; }
+  .btn-danger:hover { background: #4a2020; }
+
+  /* ── TABLE ── */
+  .table-wrap { padding: 0 32px 40px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  thead th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    user-select: none;
+  }
+  thead th.sortable { cursor: pointer; }
+  thead th.sortable:hover { color: var(--text); }
+  tbody tr {
+    border-bottom: 1px solid #1e1e1e;
+    transition: background .1s;
+  }
+  tbody tr:hover { background: #171717; }
+  tbody td { padding: 10px 12px; vertical-align: middle; }
+
+  .doc-name {
+    color: var(--text);
+    font-weight: 400;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .doc-name:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ── TAGS ── */
+  .tag {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .3px;
+  }
+  .tag-cloud    { background: rgba(196,122,26,.2); color: #e8a83c; }
+  .tag-linux    { background: rgba(44,110,73,.25); color: #5ecf8e; }
+  .tag-template { background: rgba(42,96,144,.25); color: #6ab0e0; }
+  .tag-other    { background: rgba(94,63,122,.25); color: #b08ad0; }
+
+  .status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+  }
+  .status-dot::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-done { color: var(--green); }
+  .status-done::before { background: var(--green); }
+  .status-na { color: var(--muted); }
+  .status-na::before { background: var(--muted); }
+
+  .ts { color: var(--muted); font-size: 12px; font-family: var(--mono); }
+
+  .row-actions { opacity: 0; transition: opacity .1s; display: flex; gap: 6px; }
+  tbody tr:hover .row-actions { opacity: 1; }
+  .icon-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 2px 4px; border-radius: 3px;
+    transition: color .1s, background .1s;
+    line-height: 1;
+  }
+  .icon-btn:hover { color: var(--text); background: #2a2a2a; }
+  .icon-btn.del:hover { color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state p { margin-top: 8px; font-size: 13px; }
+
+  /* ── DOC VIEW ── */
+  .doc-view { max-width: 760px; margin: 0 auto; padding: 40px 32px 80px; }
+  .doc-view-header { margin-bottom: 32px; }
+  .doc-breadcrumb {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .doc-breadcrumb a { color: var(--muted); text-decoration: none; cursor: pointer; }
+  .doc-breadcrumb a:hover { color: var(--text); }
+  .doc-title-row { display: flex; align-items: flex-start; gap: 12px; }
+  .doc-title { font-size: 26px; font-weight: 600; letter-spacing: -.3px; flex: 1; }
+  .doc-meta {
+    display: flex; gap: 12px; align-items: center;
+    margin-top: 10px; flex-wrap: wrap;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* editor */
+  .editor-toolbar {
+    display: flex;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    flex-wrap: wrap;
+  }
+  .editor-toolbar button {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--muted);
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: all .1s;
+  }
+  .editor-toolbar button:hover { background: #2a2a2a; color: var(--text); border-color: var(--border); }
+
+  #doc-editor {
+    width: 100%;
+    min-height: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 0 6px 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 16px;
+    resize: vertical;
+    outline: none;
+    tab-size: 2;
+  }
+  #doc-editor:focus { border-color: #444; }
+
+  /* rendered markdown-ish preview */
+  .doc-body {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #ccc;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    min-height: 200px;
+  }
+  .doc-body h1,.doc-body h2,.doc-body h3 { color: var(--text); margin: 1.4em 0 .5em; font-weight: 600; }
+  .doc-body h1 { font-size: 20px; } .doc-body h2 { font-size: 17px; } .doc-body h3 { font-size: 15px; }
+  .doc-body p { margin: .6em 0; }
+  .doc-body code {
+    background: #222; border: 1px solid #2e2e2e;
+    border-radius: 3px; padding: 1px 6px;
+    font-family: var(--mono); font-size: 12px; color: #e8a83c;
+  }
+  .doc-body pre {
+    background: #0d0d0d; border: 1px solid var(--border);
+    border-radius: 5px; padding: 14px 16px; overflow-x: auto; margin: 1em 0;
+  }
+  .doc-body pre code { background: none; border: none; padding: 0; color: #aaa; font-size: 13px; }
+  .doc-body ul,.doc-body ol { padding-left: 22px; margin: .5em 0; }
+  .doc-body li { margin: .3em 0; }
+  .doc-body blockquote {
+    border-left: 3px solid var(--accent); padding-left: 14px;
+    color: var(--muted); margin: 1em 0; font-style: italic;
+  }
+  .doc-body hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
+  .doc-body a { color: var(--accent); }
+  .doc-body table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  .doc-body th,.doc-body td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; }
+  .doc-body th { background: #1e1e1e; color: var(--text); font-weight: 500; }
+
+  .edit-actions { display: flex; gap: 10px; margin-top: 14px; }
+
+  /* ── NEW DOC FORM ── */
+  .new-doc-form { max-width: 560px; margin: 60px auto; padding: 0 32px; }
+  .new-doc-form h2 { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-family: var(--font);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #444; }
+  .form-group textarea { min-height: 200px; resize: vertical; font-family: var(--mono); font-size: 12px; line-height: 1.6; }
+  .form-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    max-width: 380px;
+    width: 90%;
+  }
+  .modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* toggle edit/preview */
+  .view-toggle { display: flex; gap: 0; }
+  .view-toggle button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 14px;
+    font-family: var(--font);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .1s;
+  }
+  .view-toggle button:first-child { border-radius: 4px 0 0 4px; border-right: none; }
+  .view-toggle button:last-child  { border-radius: 0 4px 4px 0; }
+  .view-toggle button.active { background: #2a2a2a; color: var(--text); }
+
+  .count { color: var(--muted); font-size: 12px; font-family: var(--mono); }
+</style>
+</head>
+<body class="show-list">
+
+<!-- ══════════════ LIST VIEW ══════════════ -->
+<div id="view-list">
+  <div class="header">
+    <div class="header-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <h1>Programming.com</h1>
+      <span>Docs</span>
+    </div>
+    <div class="header-tabs">
+      <div class="tab active" onclick="filterCategory('')">All Docs</div>
+      <div class="tab" onclick="filterCategory('Cloud Computing')">Cloud</div>
+      <div class="tab" onclick="filterCategory('Linux')">Linux</div>
+      <div class="tab" onclick="filterCategory('Templates')">Templates</div>
+      <div class="tab" onclick="filterCategory('Others')">Others</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Search docs…" oninput="renderTable()">
+    </div>
+    <select class="filter-select" id="status-filter" onchange="renderTable()">
+      <option value="">All Status</option>
+      <option value="Done">Done</option>
+      <option value="NA">NA</option>
+    </select>
+    <span class="count" id="row-count"></span>
+    <button class="btn btn-primary" onclick="showNewDoc()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      New
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="docs-table">
+      <thead>
+        <tr>
+          <th class="sortable" onclick="sortBy('name')">Doc Name <span id="sort-name"></span></th>
+          <th class="sortable" onclick="sortBy('category')">Category <span id="sort-category"></span></th>
+          <th class="sortable" onclick="sortBy('status')">Status <span id="sort-status"></span></th>
+          <th class="sortable" onclick="sortBy('created')">Created <span id="sort-created"></span></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ DOC VIEW ══════════════ -->
+<div id="view-doc">
+  <div class="header" style="padding-bottom:0">
+    <div class="header-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <h1>Programming.com</h1>
+      <span>Docs</span>
+    </div>
+  </div>
+  <div class="doc-view">
+    <div class="doc-view-header">
+      <div class="doc-breadcrumb">
+        <a onclick="showList()">← All Docs</a>
+        <span>/</span>
+        <span id="doc-breadcrumb-name"></span>
+      </div>
+      <div class="doc-title-row">
+        <div id="doc-title" class="doc-title"></div>
+        <div class="view-toggle" style="margin-top:6px">
+          <button id="btn-preview" class="active" onclick="setMode('preview')">Preview</button>
+          <button id="btn-edit" onclick="setMode('edit')">Edit</button>
+        </div>
+      </div>
+      <div class="doc-meta">
+        <span id="doc-tag" class="tag"></span>
+        <span id="doc-status" class="status-dot"></span>
+        <span id="doc-ts" class="ts"></span>
+        <select id="doc-status-select" class="filter-select" onchange="changeStatus(this.value)" style="display:none;margin-left:auto">
+          <option value="NA">NA</option>
+          <option value="Done">Done</option>
+        </select>
+        <select id="doc-cat-select" class="filter-select" onchange="changeCategory(this.value)" style="display:none">
+          <option value="Cloud Computing">Cloud Computing</option>
+          <option value="Linux">Linux</option>
+          <option value="Templates">Templates</option>
+          <option value="Others">Others</option>
+        </select>
+      </div>
+    </div>
+    <hr class="divider">
+
+    <!-- PREVIEW -->
+    <div id="mode-preview">
+      <div id="doc-body" class="doc-body"></div>
+    </div>
+
+    <!-- EDIT -->
+    <div id="mode-edit" style="display:none">
+      <div class="editor-toolbar">
+        <button onclick="ins('## ')">H2</button>
+        <button onclick="ins('### ')">H3</button>
+        <button onclick="wrap('**','**')"><b>B</b></button>
+        <button onclick="wrap('*','*')"><i>I</i></button>
+        <button onclick="wrap('`','`')">code</button>
+        <button onclick="ins('\n```\n','```\n')">block</button>
+        <button onclick="ins('- ')">• list</button>
+        <button onclick="ins('1. ')">1. list</button>
+        <button onclick="ins('> ')">quote</button>
+        <button onclick="ins('---\n')">hr</button>
+        <button onclick="ins('| Col1 | Col2 |\n|------|------|\n| val  | val  |\n')">table</button>
+      </div>
+      <textarea id="doc-editor" spellcheck="false" oninput="autoSave()"></textarea>
+      <div class="edit-actions">
+        <button class="btn btn-primary" onclick="saveDoc()">Save</button>
+        <button class="btn btn-ghost" onclick="setMode('preview')">Cancel</button>
+        <button class="btn btn-danger" style="margin-left:auto" onclick="confirmDelete()">Delete Doc</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NEW DOC ══════════════ -->
+<div id="view-new">
+  <div class="header" style="padding-bottom:0">
+    <div class="header-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <h1>Programming.com</h1>
+      <span>Docs</span>
+    </div>
+  </div>
+  <div class="new-doc-form">
+    <h2>New Document</h2>
+    <div class="form-group">
+      <label>Doc Name</label>
+      <input type="text" id="new-name" placeholder="e.g. AWS S3 Bucket Setup">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="new-category">
+        <option value="Cloud Computing">Cloud Computing</option>
+        <option value="Linux">Linux</option>
+        <option value="Templates">Templates</option>
+        <option value="Others">Others</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="new-status">
+        <option value="NA">NA</option>
+        <option value="Done">Done</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Content (Markdown supported)</label>
+      <textarea id="new-content" placeholder="# Title&#10;&#10;Write your notes here…"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="createDoc()">Create</button>
+      <button class="btn btn-ghost" onclick="showList()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ DELETE MODAL ══════════════ -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <h3>Delete document?</h3>
+    <p>This action cannot be undone. The document will be permanently removed from local storage.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="deleteDoc()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SEED DATA ──
+const SEED = [
+  { name: "AWS Commands",                                            category: "Cloud Computing", status: "NA",   content: "# AWS Commands\n\nCommon AWS CLI commands reference.\n\n## EC2\n\n```bash\n# List instances\naws ec2 describe-instances\n\n# Start instance\naws ec2 start-instances --instance-ids i-xxxxxxxxxx\n\n# Stop instance\naws ec2 stop-instances --instance-ids i-xxxxxxxxxx\n```\n\n## S3\n\n```bash\n# List buckets\naws s3 ls\n\n# Copy file to bucket\naws s3 cp file.txt s3://mybucket/\n\n# Sync directory\naws s3 sync ./local-dir s3://mybucket/remote-dir\n```\n\n## IAM\n\n```bash\n# List users\naws iam list-users\n\n# Create user\naws iam create-user --user-name newuser\n```", created: "2026-05-21T17:07:00" },
+  { name: "LAMP (Linux Apache Mysql PHP)",                          category: "Templates",       status: "Done", content: "# LAMP Stack Setup\n\n## 1. Update system\n\n```bash\nsudo apt update && sudo apt upgrade -y\n```\n\n## 2. Install Apache\n\n```bash\nsudo apt install apache2 -y\nsudo systemctl enable apache2\nsudo systemctl start apache2\n```\n\n## 3. Install MySQL\n\n```bash\nsudo apt install mysql-server -y\nsudo mysql_secure_installation\n```\n\n## 4. Install PHP\n\n```bash\nsudo apt install php libapache2-mod-php php-mysql -y\n```\n\n## 5. Verify\n\n```bash\nphp -v\nmysql --version\napache2 -v\n```\n\n> Restart Apache after PHP install: `sudo systemctl restart apache2`", created: "2026-05-21T17:07:00" },
+  { name: "Status Template",                                        category: "Templates",       status: "NA",   content: "# Status Template\n\n## Project: [Name]\n\n**Date:** YYYY-MM-DD  \n**Owner:** [Name]  \n**Status:** 🟡 In Progress\n\n---\n\n## Done\n\n- [ ] Task 1\n- [ ] Task 2\n\n## In Progress\n\n- [ ] Task 3\n\n## Blocked\n\n- [ ] Task 4 — *waiting on X*\n\n## Notes\n\n> Add any relevant notes here.", created: "2026-05-21T17:07:00" },
+  { name: "Daily Stats",                                            category: "Others",          status: "NA",   content: "# Daily Stats\n\n| Metric       | Value |\n|--------------|-------|\n| Uptime       | 99.9% |\n| Requests/s   | 1200  |\n| Errors       | 0     |\n| Latency (ms) | 42    |\n\n## Notes\n\n- Monitor CPU every morning\n- Check disk usage weekly", created: "2026-05-21T18:05:00" },
+  { name: "Cloudflare IPs",                                         category: "Cloud Computing", status: "NA",   content: "# Cloudflare IP Ranges\n\n## IPv4\n\n```\n173.245.48.0/20\n103.21.244.0/22\n103.22.200.0/22\n103.31.4.0/22\n141.101.64.0/18\n108.162.192.0/18\n190.93.240.0/20\n188.114.96.0/20\n197.234.240.0/22\n198.41.128.0/17\n162.158.0.0/15\n104.16.0.0/13\n104.24.0.0/14\n172.64.0.0/13\n131.0.72.0/22\n```\n\n## Usage in UFW\n\n```bash\nfor ip in $(curl -s https://www.cloudflare.com/ips-v4); do\n  sudo ufw allow from $ip to any port 80,443 proto tcp\ndone\n```", created: "2026-05-22T13:47:00" },
+  { name: "SSL Certificates",                                       category: "Cloud Computing", status: "Done", content: "# SSL Certificates\n\n## Let's Encrypt with Certbot\n\n```bash\n# Install certbot\nsudo apt install certbot python3-certbot-apache -y\n\n# Issue certificate\nsudo certbot --apache -d yourdomain.com -d www.yourdomain.com\n\n# Auto-renewal test\nsudo certbot renew --dry-run\n```\n\n## Check expiry\n\n```bash\nopenssl s_client -connect yourdomain.com:443 2>/dev/null | openssl x509 -noout -dates\n```\n\n## Force HTTPS in Apache\n\n```apache\n<VirtualHost *:80>\n  ServerName yourdomain.com\n  Redirect permanent / https://yourdomain.com/\n</VirtualHost>\n```", created: "2026-05-22T14:02:00" },
+  { name: "GPU Benchmark Unigine",                                  category: "Others",          status: "Done", content: "# GPU Benchmark — Unigine\n\n## Tools\n\n- **Heaven** — DirectX 11 / OpenGL benchmark\n- **Superposition** — Modern VR-ready stress test\n- **Valley** — Nature scene benchmark\n\n## Install (Linux)\n\n```bash\nwget https://assets.unigine.com/d/Unigine_Heaven-4.0.run\nchmod +x Unigine_Heaven-4.0.run\n./Unigine_Heaven-4.0.run\n```\n\n## Results to watch\n\n| Metric | Good |\n|--------|------|\n| FPS    | >60  |\n| Score  | >2000|\n| Temp   | <85°C|\n\n> Run for 30 min to check stability.", created: "2026-05-25T15:08:00" },
+  { name: "Reroute a domain name to a different IP",                category: "Templates",       status: "Done", content: "# Reroute Domain to Different IP\n\n## Via DNS (Recommended)\n\n1. Log into your DNS provider\n2. Find the **A record** for your domain\n3. Update the value to the new IP\n4. Set TTL to 300 (5 min) for fast propagation\n\n## Verify propagation\n\n```bash\nnslookup yourdomain.com\n# or\ndig yourdomain.com +short\n```\n\n## Via /etc/hosts (local override)\n\n```bash\nsudo nano /etc/hosts\n# Add: 1.2.3.4  yourdomain.com\n```\n\n> DNS propagation can take up to 48h globally. Use [dnschecker.org](https://dnschecker.org) to monitor.", created: "2026-05-25T15:21:00" },
+  { name: "Linux File System",                                      category: "Linux",           status: "NA",   content: "# Linux File System\n\n## Key Directories\n\n| Path    | Purpose |\n|---------|---------|\n| `/`     | Root |\n| `/bin`  | Essential binaries |\n| `/etc`  | Config files |\n| `/home` | User home dirs |\n| `/var`  | Variable data (logs, spool) |\n| `/tmp`  | Temporary files |\n| `/proc` | Virtual FS for process info |\n| `/dev`  | Device files |\n| `/mnt`  | Mount points |\n\n## Disk usage\n\n```bash\ndf -h          # disk free (human readable)\ndu -sh *       # size of each item\nlsblk          # list block devices\n```", created: "2026-05-25T16:34:00" },
+  { name: "Linux Commands List",                                    category: "Linux",           status: "NA",   content: "# Linux Commands List\n\n## File Operations\n\n```bash\nls -la          # list with permissions\ncp -r src dst   # copy recursive\nmv file dest    # move/rename\nrm -rf dir      # remove dir (careful!)\nfind . -name '*.log'  # find files\n```\n\n## Process Management\n\n```bash\nps aux          # all processes\nkill -9 PID     # force kill\ntop / htop      # live process view\nsystemctl status nginx\n```\n\n## Networking\n\n```bash\nip a            # IP addresses\ncurl -I url     # HTTP headers\nnetstat -tlnp   # open ports\nss -tulwn       # socket stats\n```\n\n## Permissions\n\n```bash\nchmod 755 file\nchown user:group file\n```", created: "2026-05-26T12:25:00" },
+  { name: "Software installation Process Linux",                    category: "Templates",       status: "NA",   content: "# Software Installation Process — Linux\n\n## APT (Debian/Ubuntu)\n\n```bash\nsudo apt update\nsudo apt install package-name -y\n```\n\n## From .deb file\n\n```bash\nsudo dpkg -i package.deb\nsudo apt -f install   # fix dependencies\n```\n\n## From source\n\n```bash\n./configure\nmake\nsudo make install\n```\n\n## Snap\n\n```bash\nsudo snap install package-name\n```\n\n## Checklist\n\n- [ ] Verify checksum\n- [ ] Check dependencies\n- [ ] Test in staging first\n- [ ] Document version installed", created: "2026-05-26T12:27:00" },
+  { name: "Floci",                                                  category: "Cloud Computing", status: "Done", content: "# Floci\n\nNotes on Floci cloud setup.\n\n## Overview\n\nFloci is used for [describe purpose here].\n\n## Configuration\n\n```yaml\nname: my-service\nregion: eu-west-1\ninstances: 2\n```\n\n## Deployment\n\n```bash\nfloci deploy --env production\n```\n\n## Notes\n\n- Billing cycle: monthly\n- Support: support@floci.io", created: "2026-05-26T18:26:00" },
+  { name: "Private EC2 + Access to Outbound Internet",              category: "Cloud Computing", status: "Done", content: "# Private EC2 + Outbound Internet Access\n\n## Architecture\n\n```\nPrivate Subnet EC2 → NAT Gateway → Internet Gateway → Internet\n```\n\n## Steps\n\n### 1. Create NAT Gateway\n- Place in **public subnet**\n- Assign an Elastic IP\n\n### 2. Update Route Table (private subnet)\n\n| Destination   | Target      |\n|---------------|-------------|\n| 0.0.0.0/0     | nat-xxxxxxxx |\n| 10.0.0.0/16   | local       |\n\n### 3. Verify\n\n```bash\n# SSH into private EC2 via bastion\ncurl -s https://checkip.amazonaws.com\n# Should return NAT Gateway's EIP\n```\n\n> Outbound works; inbound still blocked — private subnet stays private.", created: "2026-05-27T15:57:00" },
+  { name: "Attaching IAM User to Specific Role using inlinepolicy change and trust policy", category: "Cloud Computing", status: "Done", content: "# IAM: Attach User to Role via Inline Policy & Trust Policy\n\n## 1. Create the Role\n\n```json\n// Trust Policy — allows a specific user to assume this role\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Principal\": {\n      \"AWS\": \"arn:aws:iam::123456789:user/myuser\"\n    },\n    \"Action\": \"sts:AssumeRole\"\n  }]\n}\n```\n\n## 2. Add Inline Policy to Role\n\n```json\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Action\": [\"s3:GetObject\", \"s3:PutObject\"],\n    \"Resource\": \"arn:aws:s3:::mybucket/*\"\n  }]\n}\n```\n\n## 3. Allow User to Assume Role\n\nAttach to the IAM **user**:\n\n```json\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Action\": \"sts:AssumeRole\",\n    \"Resource\": \"arn:aws:iam::123456789:role/MyRole\"\n  }]\n}\n```\n\n## 4. Assume the Role (CLI)\n\n```bash\naws sts assume-role \\\n  --role-arn arn:aws:iam::123456789:role/MyRole \\\n  --role-session-name mysession\n```", created: "2026-05-28T16:58:00" },
+  { name: "IAM Documentation (Theoretical)",                        category: "Cloud Computing", status: "NA",   content: "# IAM Documentation — Theoretical\n\n## Core Concepts\n\n- **User** — individual identity with credentials\n- **Group** — collection of users sharing permissions\n- **Role** — assumable identity (no long-term credentials)\n- **Policy** — JSON document defining permissions\n\n## Policy Types\n\n| Type              | Attached to    |\n|-------------------|----------------|\n| Managed Policy    | User/Group/Role |\n| Inline Policy     | Single entity  |\n| Resource Policy   | Resource itself |\n| Trust Policy      | Role            |\n\n## Principle of Least Privilege\n\n> Grant only the permissions required to perform a task.\n\n## Evaluation Logic\n\n1. Explicit **Deny** → always wins\n2. Explicit **Allow** → allowed\n3. Implicit **Deny** → default\n\n## ARN Format\n\n```\narn:partition:service:region:account-id:resource\n```", created: "2026-05-28T17:28:00" },
+  { name: "Reset Chromebook",                                       category: "Templates",       status: "NA",   content: "# Reset Chromebook\n\n## Powerwash (Factory Reset)\n\n1. Sign out of your Google account\n2. Press `Ctrl + Alt + Shift + R`\n3. Select **Restart**\n4. In the box, select **Powerwash** → **Continue**\n5. Follow on-screen steps\n\n## Developer Mode Reset\n\n> ⚠️ This wipes all local data.\n\n1. Turn off Chromebook\n2. Hold `Esc + Refresh + Power`\n3. At Recovery screen: `Ctrl + D`\n4. Confirm and wait (~15 min)\n\n## Recovery Mode\n\nNeeded when OS is corrupted:\n1. Create recovery USB via [chromeos.google.com/recovery](https://chromeos.google.com/recovery)\n2. Boot from USB with `Esc + Refresh + Power`", created: "2026-05-29T16:28:00" },
+];
+
+// ── STATE ──
+let docs = [];
+let currentId = null;
+let sortField = 'created';
+let sortDir = -1;
+let filterCat = '';
+let editMode = false;
+let autoSaveTimer = null;
+
+// ── STORAGE ──
+function load() {
+  try {
+    const raw = localStorage.getItem('progdocs');
+    if (raw) { docs = JSON.parse(raw); }
+    else { docs = SEED.map((d,i) => ({ ...d, id: 'doc_'+i })); save(); }
+  } catch { docs = SEED.map((d,i) => ({ ...d, id: 'doc_'+i })); }
+}
+function save() {
+  localStorage.setItem('progdocs', JSON.stringify(docs));
+}
+
+// ── VIEWS ──
+function showList() {
+  document.body.className = 'show-list';
+  filterCat = document.querySelector('.tab.active')?.dataset?.cat || '';
+  renderTable();
+}
+function showDoc(id) {
+  currentId = id;
+  const doc = docs.find(d => d.id === id);
+  if (!doc) return;
+  document.body.className = 'show-doc';
+  document.getElementById('doc-title').textContent = doc.name;
+  document.getElementById('doc-breadcrumb-name').textContent = doc.name;
+  document.getElementById('doc-ts').textContent = fmtDate(doc.created);
+
+  const tagEl = document.getElementById('doc-tag');
+  tagEl.textContent = doc.category;
+  tagEl.className = 'tag ' + tagClass(doc.category);
+
+  const stEl = document.getElementById('doc-status');
+  stEl.textContent = doc.status;
+  stEl.className = 'status-dot status-' + doc.status.toLowerCase();
+
+  document.getElementById('doc-status-select').value = doc.status;
+  document.getElementById('doc-cat-select').value = doc.category;
+
+  setMode('preview');
+  renderPreview(doc.content || '');
+}
+function showNewDoc() {
+  document.body.className = 'show-new';
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-content').value = '';
+  document.getElementById('new-status').value = 'NA';
+  document.getElementById('new-category').value = 'Cloud Computing';
+}
+
+// ── EDIT MODE ──
+function setMode(m) {
+  editMode = (m === 'edit');
+  document.getElementById('mode-preview').style.display = editMode ? 'none' : 'block';
+  document.getElementById('mode-edit').style.display = editMode ? 'block' : 'none';
+  document.getElementById('btn-preview').classList.toggle('active', !editMode);
+  document.getElementById('btn-edit').classList.toggle('active', editMode);
+
+  const doc = docs.find(d => d.id === currentId);
+  if (!doc) return;
+  if (editMode) {
+    document.getElementById('doc-editor').value = doc.content || '';
+    document.getElementById('doc-status-select').style.display = 'inline-block';
+    document.getElementById('doc-cat-select').style.display = 'inline-block';
+    document.getElementById('doc-status').style.display = 'none';
+    document.getElementById('doc-tag').style.display = 'none';
+  } else {
+    renderPreview(doc.content || '');
+    document.getElementById('doc-status-select').style.display = 'none';
+    document.getElementById('doc-cat-select').style.display = 'none';
+    document.getElementById('doc-status').style.display = 'inline-flex';
+    document.getElementById('doc-tag').style.display = 'inline-block';
+  }
+}
+
+function saveDoc() {
+  const doc = docs.find(d => d.id === currentId);
+  if (!doc) return;
+  doc.content = document.getElementById('doc-editor').value;
+  save();
+  setMode('preview');
+}
+
+function autoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    const doc = docs.find(d => d.id === currentId);
+    if (doc) { doc.content = document.getElementById('doc-editor').value; save(); }
+  }, 1500);
+}
+
+function changeStatus(v) {
+  const doc = docs.find(d => d.id === currentId);
+  if (!doc) return;
+  doc.status = v;
+  save();
+}
+function changeCategory(v) {
+  const doc = docs.find(d => d.id === currentId);
+  if (!doc) return;
+  doc.category = v;
+  const tagEl = document.getElementById('doc-tag');
+  tagEl.textContent = v; tagEl.className = 'tag ' + tagClass(v);
+  save();
+}
+
+// ── EDITOR HELPERS ──
+function ins(before, after='') {
+  const ta = document.getElementById('doc-editor');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.slice(s,e);
+  ta.value = ta.value.slice(0,s) + before + sel + after + ta.value.slice(e);
+  ta.selectionStart = ta.selectionEnd = s + before.length + sel.length + after.length;
+  ta.focus(); autoSave();
+}
+function wrap(l,r) { ins(l,r); }
+
+// ── CREATE / DELETE ──
+function createDoc() {
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) { document.getElementById('new-name').focus(); return; }
+  const doc = {
+    id: 'doc_' + Date.now(),
+    name,
+    category: document.getElementById('new-category').value,
+    status: document.getElementById('new-status').value,
+    content: document.getElementById('new-content').value,
+    created: new Date().toISOString()
+  };
+  docs.push(doc);
+  save();
+  showDoc(doc.id);
+  setMode('edit');
+}
+
+function confirmDelete() { document.getElementById('delete-modal').classList.add('open'); }
+function closeModal()    { document.getElementById('delete-modal').classList.remove('open'); }
+function deleteDoc() {
+  docs = docs.filter(d => d.id !== currentId);
+  save(); closeModal(); showList();
+}
+
+// ── TABLE ──
+function filterCategory(cat) {
+  filterCat = cat;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTable();
+}
+
+function sortBy(field) {
+  if (sortField === field) sortDir *= -1;
+  else { sortField = field; sortDir = field === 'created' ? -1 : 1; }
+  renderTable();
+}
+
+function renderTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const st = document.getElementById('status-filter').value;
+
+  let filtered = docs.filter(d => {
+    if (filterCat && d.category !== filterCat) return false;
+    if (st && d.status !== st) return false;
+    if (q && !d.name.toLowerCase().includes(q) && !d.category.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  filtered.sort((a,b) => {
+    let av = a[sortField], bv = b[sortField];
+    if (typeof av === 'string') av = av.toLowerCase(), bv = bv.toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+
+  document.getElementById('row-count').textContent = filtered.length + ' doc' + (filtered.length!==1?'s':'');
+
+  const body = document.getElementById('table-body');
+  if (!filtered.length) {
+    body.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>No docs found</p></div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = filtered.map(d => `
+    <tr>
+      <td><a class="doc-name" onclick="showDoc('${d.id}')">${esc(d.name)}</a></td>
+      <td><span class="tag ${tagClass(d.category)}">${esc(d.category)}</span></td>
+      <td><span class="status-dot status-${d.status.toLowerCase()}">${d.status}</span></td>
+      <td><span class="ts">${fmtDate(d.created)}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="Edit" onclick="showDoc('${d.id}'); setTimeout(()=>setMode('edit'),50)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn del" title="Delete" onclick="currentId='${d.id}'; confirmDelete()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── MARKDOWN RENDERER (no deps) ──
+function renderPreview(md) {
+  document.getElementById('doc-body').innerHTML = parseMarkdown(md);
+}
+
+function parseMarkdown(text) {
+  // Escape HTML first (outside code blocks)
+  let lines = text.split('\n');
+  let html = '';
+  let inCode = false, codeLang = '', codeLines = [];
+  let inTable = false, tableLines = [];
+
+  function flushTable() {
+    if (!tableLines.length) return;
+    let out = '<table>';
+    tableLines.forEach((row, i) => {
+      if (/^\s*\|?[-: |]+\|?\s*$/.test(row)) return; // separator
+      const cells = row.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const tag = (i === 0 || (tableLines[1] && /[-:]/.test(tableLines[1]))) && i === 0 ? 'th' : 'td';
+      out += '<tr>' + cells.map(c=>`<${tag}>${inlineFormat(c)}</${tag}>`).join('') + '</tr>';
+    });
+    out += '</table>';
+    html += out;
+    tableLines = []; inTable = false;
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.startsWith('```')) {
+      if (!inCode) {
+        flushTable();
+        inCode = true; codeLang = line.slice(3).trim(); codeLines = [];
+      } else {
+        html += `<pre><code>${codeLines.map(l=>esc(l)).join('\n')}</code></pre>`;
+        inCode = false; codeLines = [];
+      }
+      continue;
+    }
+    if (inCode) { codeLines.push(line); continue; }
+
+    // Table detection
+    if (line.trim().startsWith('|')) {
+      inTable = true; tableLines.push(line); continue;
+    }
+    if (inTable) { flushTable(); }
+
+    if (!line.trim()) { html += '<p></p>'; continue; }
+    if (/^#{1,6}\s/.test(line)) {
+      const lvl = line.match(/^(#+)/)[1].length;
+      html += `<h${lvl}>${inlineFormat(line.replace(/^#+\s/,''))}</h${lvl}>`;
+    } else if (/^[-*]\s/.test(line)) {
+      html += `<ul><li>${inlineFormat(line.replace(/^[-*]\s/,''))}</li></ul>`;
+    } else if (/^\d+\.\s/.test(line)) {
+      html += `<ol><li>${inlineFormat(line.replace(/^\d+\.\s/,''))}</li></ol>`;
+    } else if (line.startsWith('> ')) {
+      html += `<blockquote><p>${inlineFormat(line.slice(2))}</p></blockquote>`;
+    } else if (/^---+$/.test(line.trim())) {
+      html += '<hr>';
+    } else {
+      html += `<p>${inlineFormat(line)}</p>`;
+    }
+  }
+  if (inCode) html += `<pre><code>${codeLines.map(l=>esc(l)).join('\n')}</code></pre>`;
+  if (inTable) flushTable();
+
+  // Merge consecutive list items
+  html = html.replace(/<\/ul>\s*<ul>/g,'').replace(/<\/ol>\s*<ol>/g,'');
+  html = html.replace(/<\/blockquote>\s*<blockquote>/g,'');
+  return html;
+}
+
+function inlineFormat(t) {
+  t = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  return t;
+}
+
+// ── UTILS ──
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function tagClass(cat) {
+  if (!cat) return '';
+  const m = { 'Cloud Computing':'tag-cloud','Linux':'tag-linux','Templates':'tag-template','Others':'tag-other' };
+  return m[cat] || 'tag-other';
+}
+
+function fmtDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ' ' +
+           d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  } catch { return iso; }
+}
+
+// close modal on overlay click
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── INIT ──
+load();
+renderTable();
+</script>
+</body>
+</html>
