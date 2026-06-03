@@ -606,15 +606,63 @@ let editMode = false;
 let autoSaveTimer = null;
 
 // ── STORAGE ──
-function load() {
-  try {
-    const raw = localStorage.getItem('progdocs');
-    if (raw) { docs = JSON.parse(raw); }
-    else { docs = SEED.map((d,i) => ({ ...d, id: 'doc_'+i })); save(); }
-  } catch { docs = SEED.map((d,i) => ({ ...d, id: 'doc_'+i })); }
+const API = 'api.php';
+
+async function load() {
+  const res = await fetch(API);
+  docs = await res.json();
+  if (!docs.length) {
+    // seed once on first run
+    for (const d of SEED) {
+      d.id = 'doc_' + Date.now() + Math.random();
+      await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(d) });
+    }
+    docs = await (await fetch(API)).json();
+  }
 }
-function save() {
-  localStorage.setItem('progdocs', JSON.stringify(docs));
+
+async function save() {} // no-op — saves happen per-operation now
+
+async function createDoc() {
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) return;
+  const doc = { name, category: document.getElementById('new-category').value,
+    status: document.getElementById('new-status').value,
+    content: document.getElementById('new-content').value };
+  const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(doc) });
+  const saved = await res.json();
+  docs.push(saved);
+  showDoc(saved.id); setMode('edit');
+}
+
+async function saveDoc() {
+  const doc = docs.find(d => d.id === currentId);
+  if (!doc) return;
+  doc.content = document.getElementById('doc-editor').value;
+  await fetch(API + '?id=' + currentId, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(doc) });
+  setMode('preview');
+}
+
+async function deleteDoc() {
+  await fetch(API + '?id=' + currentId, { method:'DELETE' });
+  docs = docs.filter(d => d.id !== currentId);
+  closeModal(); showList();
+}
+
+async function changeStatus(v) {
+  const doc = docs.find(d => d.id === currentId);
+  if (!doc) return;
+  doc.status = v;
+  await fetch(API + '?id=' + currentId, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(doc) });
+}
+
+async function changeCategory(v) {
+  const doc = docs.find(d => d.id === currentId);
+  if (!doc) return;
+  doc.category = v;
+  const tagEl = document.getElementById('doc-tag');
+  tagEl.textContent = v; tagEl.className = 'tag ' + tagClass(v);
+  await fetch(API + '?id=' + currentId, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(doc) });
 }
 
 // ── VIEWS ──
@@ -911,7 +959,7 @@ document.getElementById('delete-modal').addEventListener('click', function(e) {
 });
 
 // ── INIT ──
-load();
+load().then(() => renderTable());
 renderTable();
 </script>
 </body>
